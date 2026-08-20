@@ -87,6 +87,7 @@ function useVisible(status, match) {
 }
 
 export default function Home() {
+  const [loadingInitial, setLoadingInitial] = useState(true);
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [jobDescription, setJobDescription] = useState('');
@@ -96,6 +97,14 @@ export default function Home() {
   const [analyzingStep, setAnalyzingStep] = useState(0);
   const inputRef = useRef(null);
   const tiltRef = useRef(null);
+
+  // Initial site loading animation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadingInitial(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   function handleHeroMove(e) {
     const el = tiltRef.current;
@@ -153,6 +162,42 @@ export default function Home() {
     setStatus('idle');
   }
 
+  function handleDownloadReport() {
+    if (!result) return;
+    const content = [
+      'HIRELENS RESUME REVIEW REPORT',
+      '=============================',
+      `File: ${file?.name || 'Resume'}`,
+      `Verdict: ${result.verdict} (${result.overallScore}/100)`,
+      `ATS Keyword Match: ${result.atsMatch}%`,
+      '',
+      'CATEGORY SCORES:',
+      ...(result.sectionScores || []).map((s) => `• ${s.name}: ${s.score}/100 (Weight: ${(s.weight * 100).toFixed(0)}%)`),
+      '',
+      'STRENGTHS:',
+      ...(result.strengths || []).map((s) => `+ ${s}`),
+      '',
+      'WEAKNESSES:',
+      ...(result.weaknesses || []).map((w) => `- ${w}`),
+      '',
+      'FLAGGED RESUME LINES & SUGGESTED REWRITES:',
+      ...(result.rewrites || []).map((r, i) => `[${i + 1}] ORIGINAL:\n    "${r.original}"\n    SUGGESTION:\n    "${r.suggestion}"\n`),
+      'MATCHED KEYWORDS:',
+      (result.matchedKeywords || []).join(', ') || 'None',
+      '',
+      'MISSING KEYWORDS:',
+      (result.missingKeywords || []).join(', ') || 'None',
+    ].join('\n');
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(file?.name || 'resume').replace(/\.[^/.]+$/, '')}-review-edits.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   // Cycle the "analyzing" status message while a review is running.
   useEffect(() => {
     if (status !== 'analyzing') {
@@ -170,6 +215,28 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen overflow-x-hidden">
+      {/* Initial Website Loading Animation */}
+      <div
+        className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-desk transition-all duration-500 ${
+          loadingInitial
+            ? 'pointer-events-auto opacity-100'
+            : 'pointer-events-none opacity-0'
+        }`}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-display text-3xl italic text-paper sm:text-4xl">HireLens</span>
+            <span className="h-2 w-2 rounded-full bg-marker animate-ping" />
+          </div>
+          <div className="h-1 w-32 overflow-hidden rounded-full bg-paper/20">
+            <div className="h-full w-full bg-gradient-to-r from-marker to-pen animate-[pulse_1s_ease-in-out_infinite]" />
+          </div>
+          <p className="font-mono text-[11px] tracking-widest text-paper/60">
+            PREPARING REVIEW DESK...
+          </p>
+        </div>
+      </div>
+
       <MouseGlow />
       {/* Header */}
       <header className="anim-up mx-auto flex max-w-6xl items-center justify-between px-6 py-8 sm:px-10">
@@ -266,6 +333,74 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 3-Step How-It-Works */}
+      <section className="mx-auto max-w-4xl px-6 pb-14 sm:px-10">
+        <div
+          className="anim-up rounded-sm border border-paper/15 bg-paper/5 p-6 backdrop-blur-sm sm:p-8"
+          style={{ animationDelay: '0.2s' }}
+        >
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[11px] uppercase tracking-widest text-marker">
+              How it works
+            </span>
+            <span className="font-mono text-[11px] text-paper/40">3-STEP REVIEW</span>
+          </div>
+          <h2 className="mt-2 font-display text-2xl text-paper sm:text-3xl">
+            From rough draft to interview-ready in seconds
+          </h2>
+
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {/* Step 1 */}
+            <div className="group relative flex flex-col justify-between rounded-sm border border-paper/10 bg-paper/[0.04] p-5 transition-all duration-300 hover:border-paper/25 hover:bg-paper/[0.07]">
+              <div>
+                <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-pen/20 font-mono text-xs font-semibold text-paper">
+                  1
+                </div>
+                <h3 className="mt-3 font-display text-lg font-medium text-paper">
+                  Upload
+                </h3>
+                <p className="mt-2 font-body text-xs leading-relaxed text-paper/70">
+                  Drop your PDF or DOCX resume. Optionally add a job description to tune keyword analysis.
+                </p>
+              </div>
+              <div className="mt-4 font-mono text-[10px] text-paper/40">STEP 01</div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="group relative flex flex-col justify-between rounded-sm border border-paper/10 bg-paper/[0.04] p-5 transition-all duration-300 hover:border-marker/30 hover:bg-paper/[0.07]">
+              <div>
+                <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-marker/20 font-mono text-xs font-semibold text-marker">
+                  2
+                </div>
+                <h3 className="mt-3 font-display text-lg font-medium text-paper">
+                  AI scans
+                </h3>
+                <p className="mt-2 font-body text-xs leading-relaxed text-paper/70">
+                  Deep ATS scoring audits keyword density, impact bullets, tone, formatting, and experience.
+                </p>
+              </div>
+              <div className="mt-4 font-mono text-[10px] text-marker/60">STEP 02</div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="group relative flex flex-col justify-between rounded-sm border border-paper/10 bg-paper/[0.04] p-5 transition-all duration-300 hover:border-paper/25 hover:bg-paper/[0.07]">
+              <div>
+                <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-paper/20 font-mono text-xs font-semibold text-paper">
+                  3
+                </div>
+                <h3 className="mt-3 font-display text-lg font-medium text-paper">
+                  Download edits
+                </h3>
+                <p className="mt-2 font-body text-xs leading-relaxed text-paper/70">
+                  Get line-by-line rewrite suggestions, keyword gaps, and an exported breakdown report.
+                </p>
+              </div>
+              <div className="mt-4 font-mono text-[10px] text-paper/40">STEP 03</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Upload + results */}
       <section
         id="upload"
@@ -338,7 +473,7 @@ export default function Home() {
             className="mt-2 w-full resize-none rounded-sm border border-ink/15 bg-white/60 p-3 font-body text-sm text-ink transition-all duration-300 placeholder:text-ink-faint hover:border-ink/30 focus:border-pen focus:bg-white focus:shadow-[0_0_0_4px_rgba(224,172,63,0.18)]"
           />
 
-          <div className="mt-6 flex items-center gap-3">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <button
               onClick={handleAnalyze}
               disabled={!file || status === 'analyzing'}
@@ -356,6 +491,27 @@ export default function Home() {
             </button>
             )}
           </div>
+
+          {/* Privacy notice right under upload button */}
+          <div className="mt-4 flex items-center gap-1.5 font-mono text-[11px] text-ink-soft">
+            <svg
+              className="h-3.5 w-3.5 flex-shrink-0 text-pen"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+            <span>
+              <strong className="font-medium text-ink">Encrypted & auto-deleted</strong> · Your resume is processed privately in-memory and never used for model training.
+            </span>
+          </div>
         </div>
 
         {/* Results dashboard */}
@@ -368,7 +524,7 @@ export default function Home() {
             </div>
           )}
 
-                    {status === 'analyzing' && (
+          {status === 'analyzing' && (
             <div className="anim-in flex flex-col items-center justify-center gap-4 rounded-sm border-2 border-dashed border-paper/25 px-6 py-14 text-center">
               <div className="relative flex h-11 w-11 items-center justify-center rounded-full border-2 border-paper/20">
                 <div className="absolute h-5 w-5 animate-spin rounded-full border-2 border-marker border-t-transparent" />
@@ -397,17 +553,28 @@ export default function Home() {
 
           {status === 'result' && result && (
             <div className="anim-in rounded-sm bg-paper p-6 sm:p-9">
-              <div className="flex items-center justify-between">
-                <h3 className="font-display text-xl text-ink">
-                  {result.verdict}
-                </h3>
-                <span className="font-mono font-tabular text-sm text-pen">
-                  {score}/100
-                </span>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-display text-xl text-ink">
+                    {result.verdict}
+                  </h3>
+                  <p className="mt-1 font-mono text-[11px] text-ink-faint">
+                    analyzed by HireLens AI
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleDownloadReport}
+                    className="inline-flex items-center gap-1.5 rounded-sm border border-ink/20 bg-white/80 px-3 py-1.5 font-mono text-xs text-ink shadow-sm transition hover:border-pen hover:bg-white hover:text-pen"
+                    title="Download complete edits and review report"
+                  >
+                    <span>↓</span> Download edits
+                  </button>
+                  <span className="font-mono font-tabular text-sm font-semibold text-pen">
+                    {score}/100
+                  </span>
+                </div>
               </div>
-              <p className="mt-1 font-mono text-[11px] text-ink-faint">
-                analyzed by HireLens AI
-              </p>
 
               {/* Overall score message */}
               <p className="mt-4 font-body text-sm text-ink-soft">

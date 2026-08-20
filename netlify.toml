@@ -1,0 +1,15 @@
+# Deploy configuration for Netlify.
+# Netlify auto-detects Next.js and applies the official Next.js runtime
+# (OpenNext adapter) automatically; this file just pins the standard build
+# settings that Netlify also suggests: `next build` and publish dir `.next`.
+# The adapter deploys this App Router's server routes (/api/analyze) as
+# Netlify Functions and the root middleware as an Edge Function automatically.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# Local development via `netlify dev`.
+[dev]
+  command = "npm run dev"
+  port = 3000

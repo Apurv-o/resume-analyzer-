@@ -1,3 +1,8 @@
+// Polyfill browser-only DOMMatrix before anything can load pdf-parse/pdfjs —
+// pdf.js evaluates `new DOMMatrix()` at module scope in serverless bundles and
+// Node has no DOMMatrix global, which otherwise crashes with "DOMMatrix is not
+// defined" on Netlify. Must be imported FIRST (side-effect installs the global).
+import '../../../utils/dommatrix-polyfill';
 import { GoogleGenAI } from '@google/genai';
 import { createClient } from '../../../utils/supabase/server';
 import {

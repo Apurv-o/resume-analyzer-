@@ -1,4 +1,4 @@
-// Polyfill browser-only DOMMatrix before anything can load pdf-parse/pdfjs —
+// Polyfill browser-only DOMMatrix before anything can load PDF libraries —
 // pdf.js evaluates `new DOMMatrix()` at module scope in serverless bundles and
 // Node has no DOMMatrix global, which otherwise crashes with "DOMMatrix is not
 // defined" on Netlify. Must be imported FIRST (side-effect installs the global).
@@ -51,12 +51,11 @@ async function extractText(file) {
   const mime = normalizeDocxType(file.type);
 
   if (mime === 'application/pdf') {
-    const { PDFParse } = await import('pdf-parse');
-    const parser = new PDFParse({ data: new Uint8Array(buf) });
-    const result = await parser.getText();
-    const text = (result?.text || '').trim();
-    if (!text) throw new Error('No readable text found in this PDF (it may be a scanned image).');
-    return text;
+    const { extractText: extractPdfText } = await import('unpdf');
+    const { text } = await extractPdfText(new Uint8Array(buf), { mergePages: true });
+    const resultText = (Array.isArray(text) ? text.join('\n') : text || '').trim();
+    if (!resultText) throw new Error('No readable text found in this PDF (it may be a scanned image).');
+    return resultText;
   }
 
   // DOCX

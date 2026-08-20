@@ -4,7 +4,7 @@ const nextConfig = {
   // server bundle — pdfjs-dist fails when webpack-bundled, so require them
   // directly from Node at runtime instead.
   experimental: {
-    serverComponentsExternalPackages: ['pdf-parse', 'mammoth'],
+    serverComponentsExternalPackages: ['unpdf', 'mammoth'],
   },
 };
 

@@ -139,6 +139,51 @@ function buildPrompt(resumeText, jobDescription) {
   ].join('\n');
 }
 
+async function generateContentWithRetry(ai, params, maxRetries = 2) {
+  let lastErr;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await ai.models.generateContent(params);
+    } catch (err) {
+      lastErr = err;
+      const isTransient =
+        err?.status === 503 ||
+        err?.status === 429 ||
+        /503|UNAVAILABLE|high demand|rate limit|429/i.test(err?.message || '');
+
+      if (attempt < maxRetries && isTransient) {
+        console.warn(
+          `Gemini transient error (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${(attempt + 1) * 1.5}s...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, 1500 * (attempt + 1)));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastErr;
+}
+
+function formatErrorMessage(err) {
+  if (!err) return 'AI analysis failed. Please try again.';
+  let msg = err.message || '';
+  if (typeof msg === 'string' && msg.trim().startsWith('{') && msg.trim().endsWith('}')) {
+    try {
+      const parsed = JSON.parse(msg);
+      if (parsed?.error?.message) {
+        msg = parsed.error.message;
+      }
+    } catch {}
+  }
+  if (/high demand|503|UNAVAILABLE/i.test(msg)) {
+    return 'The AI service is currently experiencing high demand. Please try again in a few moments.';
+  }
+  if (/quota|rate limit|429/i.test(msg)) {
+    return 'API rate limit reached. Please wait a moment and try again.';
+  }
+  return msg || 'AI analysis failed. Please try again.';
+}
+
 export async function POST(request) {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -190,7 +235,7 @@ export async function POST(request) {
     let data;
     try {
       const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
+      const response = await generateContentWithRetry(ai, {
         model: MODEL,
         contents: buildPrompt(resumeText, jobDescription),
         config: {
@@ -211,7 +256,7 @@ export async function POST(request) {
     } catch (err) {
       console.error('Gemini analysis failed:', err);
       return Response.json(
-        { error: err?.message || 'AI analysis failed. Please try again.' },
+        { error: formatErrorMessage(err) },
         { status: 502 }
       );
     }

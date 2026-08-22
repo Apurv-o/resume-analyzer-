@@ -1331,11 +1331,22 @@ export default function Home() {
 
       {/* ── Footer ─────────────────────────────────────── */}
       <footer
-        className="relative z-10 border-t py-8 text-center"
+        className="relative z-10 border-t py-8 text-center flex flex-col items-center justify-center gap-2"
         style={{ borderColor: 'rgba(255,255,255,0.06)' }}
       >
         <p className="text-xs font-mono" style={{ color: 'rgba(255,255,255,0.2)' }}>
           HireLens · AI Resume Intelligence · Free · No signup required
+        </p>
+        <p className="text-xs font-mono" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          Made by{' '}
+          <a
+            href="https://apurv-portfolio-gamma.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors duration-200 underline decoration-indigo-500/30 underline-offset-4 hover:decoration-indigo-400"
+          >
+            Apurv
+          </a>
         </p>
       </footer>
     </main>

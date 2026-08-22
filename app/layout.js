@@ -1,9 +1,9 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'HireLens — AI resume review, marked up like an editor would',
+  title: 'HireLens — AI Resume Analyzer',
   description:
-    'Upload your resume and get it annotated: what to cut, what to prove with numbers, and what an ATS will miss.',
+    'Upload your resume and get AI-powered insights: ATS scoring, keyword gaps, line-by-line rewrites, and a full breakdown.',
 };
 
 export default function RootLayout({ children }) {
@@ -17,16 +17,16 @@ export default function RootLayout({ children }) {
           crossOrigin="true"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500&display=swap"
           rel="stylesheet"
         />
       </head>
       <body
-        className="font-body"
+        className="font-body antialiased"
         style={{
           '--font-display': "'Fraunces', Georgia, serif",
-          '--font-body': "'Inter', system-ui, sans-serif",
-          '--font-mono': "'IBM Plex Mono', ui-monospace, monospace",
+          '--font-body': "'Plus Jakarta Sans', system-ui, sans-serif",
+          '--font-mono': "'JetBrains Mono', ui-monospace, monospace",
         }}
       >
         {children}

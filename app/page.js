@@ -1340,7 +1340,7 @@ export default function Home() {
         <p className="text-xs font-mono" style={{ color: 'rgba(255,255,255,0.35)' }}>
           Made by{' '}
           <a
-            href="https://apurv-portfolio-gamma.vercel.app/"
+            href="https://bit.ly/4gsM1za"
             target="_blank"
             rel="noopener noreferrer"
             className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors duration-200 underline decoration-indigo-500/30 underline-offset-4 hover:decoration-indigo-400"

@@ -468,7 +468,7 @@ export default function Home() {
               style={{ color: 'rgba(255,255,255,0.55)', animationDelay: '0.22s' }}
             >
               Upload your resume and get back exactly what an ATS reads, which lines fall flat,
-              keyword gaps, and precise rewrites — not vague "looks good."
+              keyword gaps, and precise rewrites — not vague &quot;looks good.&quot;
             </p>
 
             {/* Feature pills */}
